@@ -2,7 +2,7 @@ import streamlit as st
 from pathlib import Path
 
 # --- Paths robustes (app.py est dans /src)
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 
 def pth(rel: str) -> Path:
     """Convertit un chemin relatif repo -> Path absolu."""
