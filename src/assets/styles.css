@@ -233,3 +233,13 @@ header[data-testid="stHeader"] *{
   box-shadow: 0 6px 14px rgba(0,0,0,0.25);
   filter: brightness(0.95);
 }
+
+
+
+.fade-in{
+  animation: fadeInUp .35s ease-out both;
+}
+@keyframes fadeInUp{
+  from{ opacity:0; transform: translateY(8px); }
+  to{ opacity:1; transform: translateY(0); }
+}

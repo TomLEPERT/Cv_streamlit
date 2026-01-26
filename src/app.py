@@ -1,21 +1,28 @@
 import streamlit as st
 from pathlib import Path
 
-# --- Paths robustes (app.py est dans /src)
-BASE_DIR = Path(__file__).resolve().parent
+# ============================================================
+# Paths
+# ============================================================
+BASE_DIR = Path(__file__).resolve().parent  # -> /.../src
 
 def pth(rel: str) -> Path:
-    """Convertit un chemin relatif repo -> Path absolu."""
     return (BASE_DIR / rel).resolve()
 
-# --- Page config
+IMG_EXT = {".jpg", ".jpeg", ".png", ".webp"}
+
+# ============================================================
+# Page config
+# ============================================================
 st.set_page_config(
     page_title="CV - Tom LEPERT",
     page_icon="📄",
     layout="wide",
 )
 
-# --- CSS
+# ============================================================
+# CSS
+# ============================================================
 def load_css():
     css_path = pth("assets/styles.css")
     if css_path.exists():
@@ -25,7 +32,9 @@ def load_css():
 
 load_css()
 
-# ---------------- DATA PROJETS ----------------
+# ============================================================
+# Data projets
+# ============================================================
 PROJECTS = [
     {
         "id": "mimicom",
@@ -297,16 +306,9 @@ PROJECTS = [
 by_id = {p["id"]: p for p in PROJECTS}
 st.session_state.setdefault("selected_project", None)
 
-# ---------------- Helpers UI ----------------
-IMG_EXT = {".jpg", ".jpeg", ".png", ".webp"}
-
-def show_image(path: Path, **kwargs):
-    if path.exists():
-        st.image(str(path), **kwargs)
-        return True
-    return False
-
-# ---------------- Sidebar ----------------
+# ============================================================
+# Sidebar
+# ============================================================
 with st.sidebar:
     st.markdown(
         """
@@ -320,12 +322,10 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    # Photo
     photo = pth("assets/img/portrait.jpg")
     if photo.exists():
-        st.image(str(photo), use_container_width=True)
+        st.image(str(photo), width='stretch')
 
-    # CV
     cv_path = pth("assets/cv/CV_2026_LEPERT_TOM.pdf")
     if cv_path.exists():
         with open(cv_path, "rb") as f:
@@ -334,7 +334,7 @@ with st.sidebar:
                 data=f,
                 file_name="CV_TOM_LEPERT.pdf",
                 mime="application/pdf",
-                use_container_width=True,
+                width='stretch',
             )
 
     st.markdown(
@@ -347,11 +347,14 @@ with st.sidebar:
         """,
         unsafe_allow_html=True
     )
-    st.link_button("LinkedIn", "https://www.linkedin.com/in/tom-lepert", use_container_width=True)
-    st.link_button("GitHub", "https://github.com/TomLEPERT", use_container_width=True)
+    st.link_button("LinkedIn", "https://www.linkedin.com/in/tom-lepert", width='stretch')
+    st.link_button("GitHub", "https://github.com/TomLEPERT", width='stretch')
     st.markdown("📧 **tom.lepert@laposte.net**")
 
-# ---------------- Hero ----------------
+# ============================================================
+# Hero (toujours affiché, mais fade-in)
+# ============================================================
+st.markdown('<div class="fade-in">', unsafe_allow_html=True)
 st.markdown(
     """
     <div class="hero">
@@ -374,22 +377,27 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("## Mes projets")
+# ============================================================
+# UI - cartes projets (affichées uniquement si aucun projet sélectionné)
+# ============================================================
+def project_card(p: dict):
+    st.markdown('<div class="pcard fade-in">', unsafe_allow_html=True)
 
-# ---------------- Cartes projets ----------------
-def project_card(p):
-    st.markdown('<div class="pcard">', unsafe_allow_html=True)
-
-    # Cover (chemin absolu)
     cover = pth(p["cover"])
-    if not show_image(cover, use_container_width=True):
+    if cover.exists():
+        st.image(str(cover), width='stretch')
+    else:
         st.info(f"Cover introuvable : {p['cover']}")
 
     st.markdown(f'<div class="ptitle">{p["title"]}</div>', unsafe_allow_html=True)
 
     if p.get("status"):
-        st.markdown(f"<div class='muted' style='margin-top:-6px; margin-bottom:8px'>{p['status']}</div>", unsafe_allow_html=True)
+        st.markdown(
+            f"<div class='muted' style='margin-top:-6px; margin-bottom:8px'>{p['status']}</div>",
+            unsafe_allow_html=True,
+        )
 
     st.markdown(f'<div class="pdesc">{p["desc"]}</div>', unsafe_allow_html=True)
 
@@ -408,51 +416,51 @@ def project_card(p):
 
     c1, c2 = st.columns(2, gap="small")
     with c1:
-        if st.button("Voir le projet →", key=f"open_{p['id']}", use_container_width=True):
+        if st.button("Voir le projet →", key=f"open_{p['id']}", width='stretch'):
             st.session_state["selected_project"] = p["id"]
+            st.rerun()
 
     with c2:
         if p.get("demo"):
-            st.link_button("Démo", p["demo"], use_container_width=True)
-        elif p.get("github"):
-            st.link_button("Repo GitHub", p["github"], use_container_width=True)
+            st.link_button("Démo", p["demo"], width='stretch')
         else:
-            st.button("Repo privé", disabled=True, use_container_width=True)
+            st.link_button("Repo GitHub", p["github"], width='stretch')
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-cols = st.columns(2, gap="large")
-for i, p in enumerate(PROJECTS):
-    with cols[i % 2]:
-        project_card(p)
+if st.session_state["selected_project"] is None:
+    st.markdown("## Mes projets")
+    cols = st.columns(2, gap="large")
+    for i, p in enumerate(PROJECTS):
+        with cols[i % 2]:
+            project_card(p)
 
-# ---------------- Détail projet ----------------
-if st.session_state["selected_project"]:
+# ============================================================
+# Détail projet (affiché uniquement si un projet sélectionné)
+# ============================================================
+if st.session_state["selected_project"] is not None:
     p = by_id[st.session_state["selected_project"]]
 
-    st.markdown("<div style='height:26px'></div>", unsafe_allow_html=True)
+    st.markdown('<div class="fade-in">', unsafe_allow_html=True)
+
     st.markdown(f"## {p['title']}")
     st.write(p["desc"])
     st.caption("Tech : " + " • ".join(p["tech"]))
 
-    # Boutons
     b1, b2 = st.columns(2)
     with b1:
-        if p.get("github"):
-            st.link_button("Voir sur GitHub", p["github"], use_container_width=True)
-        else:
-            st.button("Repo privé", disabled=True, use_container_width=True)
+        st.link_button("Voir sur GitHub", p["github"], width='stretch')
     with b2:
         if p.get("demo"):
-            st.link_button("Ouvrir la démo", p["demo"], use_container_width=True)
+            st.link_button("Ouvrir la démo", p["demo"], width='stretch')
+        else:
+            st.button("Pas de démo", disabled=True, width='stretch')
 
-    # Highlights
     if p.get("highlights"):
         st.markdown("### Points clés")
         for h in p["highlights"]:
             st.write(f"- {h}")
 
-    # Détails (toutes les sections)
     d = p.get("details", {})
     if d:
         st.markdown("### Détails")
@@ -464,23 +472,23 @@ if st.session_state["selected_project"]:
             else:
                 st.write(content)
 
-    # Captures
     img_dir = pth(p["images_dir"])
     if img_dir.exists():
         imgs = sorted([x for x in img_dir.iterdir() if x.suffix.lower() in IMG_EXT])
-        imgs = [x for x in imgs if x.name.lower() not in {"cover.jpg","cover.jpeg","cover.png","cover.webp"}]
+        imgs = [x for x in imgs if x.name.lower() not in {"cover.jpg", "cover.jpeg", "cover.png", "cover.webp"}]
         if imgs:
             st.markdown("### Captures")
-            st.image([str(x) for x in imgs], use_container_width=True)
-        else:
-            st.info(f"Aucune capture dans : {p['images_dir']}")
-    else:
-        st.info(f"Dossier images introuvable : {p['images_dir']}")
+            st.image([str(x) for x in imgs], width='stretch')
 
-    if st.button("← Retour aux projets", use_container_width=True):
+    if st.button("← Retour aux projets", width='stretch'):
         st.session_state["selected_project"] = None
+        st.rerun()
 
-# ---------------- Footer ----------------
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ============================================================
+# Footer
+# ============================================================
 st.markdown(
     """
     <div class="footer">

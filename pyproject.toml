@@ -1,7 +1,9 @@
 [project]
 name = "streamlit-cv"
 version = "0.1.0"
-description = "Add your description here"
+description = ""
 readme = "README.md"
+authors = ["Tom Lepert"]
+package-mode = false
 requires-python = ">=3.10"
 dependencies = []
