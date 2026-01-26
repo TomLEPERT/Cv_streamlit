@@ -352,7 +352,7 @@ with st.sidebar:
     st.markdown("📧 **tom.lepert@laposte.net**")
 
 # ============================================================
-# Hero (toujours affiché, mais fade-in)
+# Hero
 # ============================================================
 st.markdown('<div class="fade-in">', unsafe_allow_html=True)
 st.markdown(
@@ -383,8 +383,6 @@ st.markdown("</div>", unsafe_allow_html=True)
 # UI - cartes projets (affichées uniquement si aucun projet sélectionné)
 # ============================================================
 def project_card(p: dict):
-    st.markdown('<div class="pcard fade-in">', unsafe_allow_html=True)
-
     cover = pth(p["cover"])
     if cover.exists():
         st.image(str(cover), width='stretch')
@@ -426,7 +424,7 @@ def project_card(p: dict):
         else:
             st.link_button("Repo GitHub", p["github"], width='stretch')
 
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("---", unsafe_allow_html=True)
 
 if st.session_state["selected_project"] is None:
     st.markdown("## Mes projets")
