@@ -326,7 +326,7 @@ with st.sidebar:
     if photo.exists():
         st.image(str(photo), width='stretch')
 
-    cv_path = pth("assets/cv/CV_2026_LEPERT_TOM.pdf")
+    cv_path = pth("assets/cv/CV_LEPERT_TOM_30ans.pdf")
     if cv_path.exists():
         with open(cv_path, "rb") as f:
             st.download_button(
